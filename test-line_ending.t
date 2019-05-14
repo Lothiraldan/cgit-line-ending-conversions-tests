@@ -45,7 +45,6 @@ Windows clone
   Initialized empty Git repository in $TESTTMP/Windows/.git/
   $ cd Windows
   $ git config core.autocrlf true
-  $ git config core.safecrlf true
   $ git config core.eol crlf
   $ git config --list --show-origin
   file:/etc/gitconfig	filter.lfs.clean=git-lfs clean -- %f
@@ -810,20 +809,92 @@ Try replacing line-ending on Linux
 
   $ cd ../
 
+Add new LF file from Windows
+
+  $ cd Windows/
+
+  $ cp $TESTDIR/updated_lf new_lf_from_windows
+  $ file new_lf_from_windows
+  new_lf_from_windows: ASCII text
+  $ git add new_lf_from_windows
+  warning: LF will be replaced by CRLF in new_lf_from_windows.
+  The file will have its original line endings in your working directory.
+  $ git status
+  On branch master
+  Changes to be committed:
+    (use "git reset HEAD <file>..." to unstage)
+  
+  	new file:   new_lf_from_windows
+  
+  $ git commit -m "Add new LF file" --date="$DATE"
+  [master 93dfda1] Add new LF file
+   Date: Mon Aug 20 20:19:19 2018 +0100
+   1 file changed, 5 insertions(+)
+   create mode 100644 new_lf_from_windows
+  $ file *
+  crlf:                  ASCII text
+  lf:                    ASCII text, with CRLF line terminators
+  lf_plus_crlf_linux:    ASCII text, with CRLF line terminators
+  lf_plus_crlf_windows:  ASCII text, with CRLF, LF line terminators
+  new_crlf_from_linux:   ASCII text, with CRLF line terminators
+  new_crlf_from_windows: ASCII text, with CRLF line terminators
+  new_lf_from_windows:   ASCII text
+  $ touch new_lf_from_windows
+  $ git status
+  On branch master
+  nothing to commit, working tree clean
+  $ git diff
+  $ git push
+  To ../server
+     2dddb40..93dfda1  master -> master
+  $ cd ..
+
+Check on Linux
+
+  $ cd Linux/
+  $ git pull
+  From ../server
+   * branch            master     -> FETCH_HEAD
+  Updating 2dddb40..93dfda1
+  Fast-forward
+   new_lf_from_windows | 5 +++++
+   1 file changed, 5 insertions(+)
+   create mode 100644 new_lf_from_windows
+  $ file *
+  crlf:                  ASCII text, with CRLF line terminators
+  lf:                    ASCII text, with CRLF line terminators
+  lf_plus_crlf_linux:    ASCII text, with CRLF, LF line terminators
+  lf_plus_crlf_windows:  ASCII text
+  new_crlf_from_linux:   ASCII text
+  new_crlf_from_windows: ASCII text
+  new_lf_from_windows:   ASCII text
+  $ file new_lf_from_windows
+  new_lf_from_windows: ASCII text
+  $ cat new_lf_from_windows
+  line1
+  line2
+  line3
+  line4
+  line5
+  $ cd ..
+
+
 Check on a repo without conversion
 
   $ cd initial_client/
   $ git pull
   From ../server
    * branch            master     -> FETCH_HEAD
-  Updating 0bdb473..2dddb40
+  Updating 0bdb473..93dfda1
   Fast-forward
    crlf                 | 16 ++++++++--------
    lf_plus_crlf_linux   | 14 ++++++++++++++
    lf_plus_crlf_windows | 11 +++++++++++
-   3 files changed, 33 insertions(+), 8 deletions(-)
+   new_lf_from_windows  |  5 +++++
+   4 files changed, 38 insertions(+), 8 deletions(-)
    create mode 100644 lf_plus_crlf_linux
    create mode 100644 lf_plus_crlf_windows
+   create mode 100644 new_lf_from_windows
   $ file *
   crlf:                  ASCII text
   lf:                    ASCII text
@@ -831,6 +902,7 @@ Check on a repo without conversion
   lf_plus_crlf_windows:  ASCII text
   new_crlf_from_linux:   ASCII text
   new_crlf_from_windows: ASCII text
+  new_lf_from_windows:   ASCII text
   $ tail *
   ==> crlf <==
   line1
@@ -882,4 +954,10 @@ Check on a repo without conversion
   line2
   line3
   line4
-  line5 (no-eol)
+  line5
+  ==> new_lf_from_windows <==
+  line1
+  line2
+  line3
+  line4
+  line5
